@@ -50,8 +50,17 @@ export default function Dashboard() {
   const { data: fileList, isPending } =
     trpcClientReact.file.listFiles.useQuery();
 
+  usePasteFile({
+    onFilesPaste: (files) => {
+      uppy.addFiles(
+        files.map((file) => ({
+          data: file,
+        }))
+      );
+    },
+  });
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto p-2">
       <div>
         <UploadButton uppy={uppy}></UploadButton>
 
@@ -77,8 +86,16 @@ export default function Dashboard() {
         {(dragging) => {
           return (
             <div
-              className={cn("flex flex-wrap gap-4", dragging && " bg-red-100")}
+              className={cn(
+                "flex flex-wrap gap-4 relative",
+                dragging && "border border-dashed"
+              )}
             >
+              {dragging && (
+                <div className="absolute inset-0 bg-secondary/30 flex justify-center items-center text-3xl">
+                  Drop File Here to Upload
+                </div>
+              )}
               {fileList?.map((file) => {
                 const isImage = file.contentType.startsWith("image");
                 return (

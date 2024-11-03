@@ -1,5 +1,5 @@
 import Uppy from "@uppy/core";
-import { ReactNode, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
 
 export function Dropzone({
   uppy,
@@ -9,6 +9,7 @@ export function Dropzone({
   children: ReactNode | ((draging: boolean) => ReactNode);
 }) {
   const [dragging, setDragging] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   return (
     <div
@@ -18,10 +19,20 @@ export function Dropzone({
       }}
       onDragLeave={(e) => {
         e.preventDefault();
-        setDragging(false);
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
+        }
+        timerRef.current = setTimeout(() => {
+          setDragging(false);
+        }, 50);
       }}
       onDragOver={(e) => {
         e.preventDefault();
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
+        }
       }}
       onDrop={(e) => {
         e.preventDefault();
