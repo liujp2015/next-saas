@@ -3,8 +3,11 @@ import { Uppy } from "@uppy/core";
 import AWSS3 from "@uppy/aws-s3";
 import { useEffect, useState } from "react";
 import { useUppyState } from "./useUppyState";
-import { Button } from "@/components/Button";
+import { Button } from "@/components/ui/Button";
 import { trpcClientReact, trpcPureClient } from "@/utils/api";
+import { UploadButton } from "@/components/feature/UploadButton";
+import Image from "next/image";
+import { Dropzone } from "@/components/feature/Dropzone";
 
 export default function Dashboard() {
   const [uppy] = useState(() => {
@@ -43,15 +46,51 @@ export default function Dashboard() {
     };
   }, [uppy]);
 
-  const { data: files, isPending } = trpcClientReact.file.listFiles.useQuery();
+  const { data: fileList, isPending } =
+    trpcClientReact.file.listFiles.useQuery();
 
   return (
-    <div className="h-screen flex justify-center items-center">
-      {isPending && <div>Loading</div>}
-      {fileList?.map((file) => {
-        return <div key={file.id}>{file.name}</div>;
-      })}
+    <div className="container mx-auto">
+      <div>
+        <UploadButton uppy={uppy}></UploadButton>
 
+        <Button
+          onClick={() => {
+            if (uppy) {
+              uppy.upload().then((result: any) => {
+                if (result.failed.length > 0) {
+                  console.error("Upload failed:", result.failed);
+                } else {
+                  console.log("Upload successful:", result.successful);
+                }
+              });
+            }
+          }}
+        >
+          Upload
+        </Button>
+        <div>{progress}</div>
+      </div>
+      {isPending && <div>Loading</div>}
+      <Dropzone uppy={uppy}>
+        <div className="flex flex-wrap gap-4">
+          {fileList?.map((file) => {
+            const isImage = file.contentType.startsWith("image");
+            return (
+              <div
+                key={file.id}
+                className="w-56 h-56 flex justify-center items-center border"
+              >
+                {isImage ? (
+                  <img src={file.url} alt={file.name}></img>
+                ) : (
+                  <Image src="" width={100} height={100} alt=""></Image>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </Dropzone>
       {/* <input
         type="file"
         onChange={(e) => {

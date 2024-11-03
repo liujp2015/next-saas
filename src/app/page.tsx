@@ -1,8 +1,8 @@
 "use client";
 
-import { Input } from "@/components/Input";
-import { Textarea } from "@/components/Textarea";
-import { Button } from "@/components/Button";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Button } from "@/components/ui/Button";
 import { db } from "@/server/db/db";
 import { SessionProvider, UserInfo } from "./UserInfo";
 import { getServerSession } from "@/server/auth";
