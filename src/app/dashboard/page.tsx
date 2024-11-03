@@ -28,27 +28,51 @@ export default function Dashboard() {
     });
     return uppy;
   });
+  const [uploadingFileIDs, setUploadingFileIDs] = useState<string[]>([]);
+  const uppyFiles = useUppyState(uppy, (s) => s.files);
+
+  const { data: fileList, isPending } =
+    trpcClientReact.file.listFiles.useQuery();
+
+  const utils = trpcClientReact.useUtils();
 
   useEffect(() => {
     const handler = (file, resp) => {
       if (file) {
-        trpcPureClient.file.saveFile.mutate({
-          name: file.data instanceof File ? file.data.name : "test",
-          path: resp.uploadURL ?? "",
-          type: file.data.type,
-        });
+        trpcPureClient.file.saveFile
+          .mutate({
+            name: file.data instanceof File ? file.data.name : "test",
+            path: resp.uploadURL ?? "",
+            type: file.data.type,
+          })
+          .then((resp) => {
+            utils.file.listFiles.setData(void 0, (prev) => {
+              if (!prev) {
+                return prev;
+              }
+              return [resp, ...prev];
+            });
+          });
       }
     };
 
+    const uploadProgressHandler = (data) => {
+      setUploadingFileIDs((currentFiles) => [...currentFiles, ...data.fileIDs]);
+    };
+
+    const completeHandler = () => {
+      setUploadingFileIDs([]);
+    };
+    uppy.on("upload", uploadProgressHandler);
     uppy.on("upload-success", handler);
+    uppy.on("complete", completeHandler);
 
     return () => {
       uppy.off("upload-success", handler);
+      uppy.off("upload", uploadProgressHandler);
+      uppy.off("complete", completeHandler);
     };
   }, [uppy]);
-
-  const { data: fileList, isPending } =
-    trpcClientReact.file.listFiles.useQuery();
 
   usePasteFile({
     onFilesPaste: (files) => {
@@ -95,6 +119,34 @@ export default function Dashboard() {
                   Drop File Here to Upload
                 </div>
               )}
+
+              {uploadingFileIDs.length > 0 &&
+                uploadingFileIDs.map((id) => {
+                  const file = uppyFiles[id];
+
+                  const isImage = file.data.type.startsWith("image");
+
+                  const url = URL.createObjectURL(file.data);
+
+                  return (
+                    <div
+                      key={file.id}
+                      className="w-56 h-56 flex justify-center items-center border border-red-500"
+                    >
+                      {isImage ? (
+                        <img src={url} alt={file.name} />
+                      ) : (
+                        <Image
+                          src="/unknown-file-types.png"
+                          alt="unknown file type"
+                          width={100}
+                          height={100}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+
               {fileList?.map((file) => {
                 const isImage = file.contentType.startsWith("image");
                 return (
