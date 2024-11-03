@@ -29,6 +29,7 @@ export function UploadButton({ uppy }: { uppy: Uppy }) {
               });
             });
           }
+          e.target.value = "";
         }}
         multiple
         className="fixed left-[-10000px]"

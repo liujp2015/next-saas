@@ -16,9 +16,23 @@ export function UploadPreview({ uppy }: { uppy: Uppy }) {
 
   const isImage = file.data.type.startsWith("image");
 
-  return (
-    <Dialog open={open}>
-      <DialogContent>
+  const clear = () => {
+    files.map((file) => {
+      uppy.removeFile(file.id);
+    });
+    setIndex(0);
+  };
+
+  return file ? (
+    <Dialog
+      open={open}
+      onOpenChange={(flag) => {
+        if (flag === false) {
+          clear();
+        }
+      }}
+    >
+      <DialogContent onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogTitle>Upload Preview</DialogTitle>
         <div className="flex  items-center justify-between">
           <Button
@@ -61,15 +75,25 @@ export function UploadPreview({ uppy }: { uppy: Uppy }) {
           <Button
             onClick={() => {
               uppy.removeFile(file.id);
+              if (index === files.length - 1) {
+                setIndex(files.length - 2);
+              }
             }}
             variant="destructive"
           >
-            {" "}
             Delete This
           </Button>
-          <Button> Upload All</Button>
+          <Button
+            onClick={() => {
+              uppy.upload().then(() => {
+                clear();
+              });
+            }}
+          >
+            Upload All
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  ) : null;
 }
