@@ -6,7 +6,7 @@ export function Dropzone({
   children,
 }: {
   uppy: Uppy;
-  children: ReactNode;
+  children: ReactNode | ((draging: boolean) => ReactNode);
 }) {
   const [dragging, setDragging] = useState(false);
 
@@ -35,7 +35,7 @@ export function Dropzone({
         setDragging(false);
       }}
     >
-      {children}
+      {typeof children === "function" ? children(dragging) : children}
     </div>
   );
 }

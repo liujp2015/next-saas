@@ -8,6 +8,7 @@ import { trpcClientReact, trpcPureClient } from "@/utils/api";
 import { UploadButton } from "@/components/feature/UploadButton";
 import Image from "next/image";
 import { Dropzone } from "@/components/feature/Dropzone";
+import { cn } from "../lib/utils";
 
 export default function Dashboard() {
   const [uppy] = useState(() => {
@@ -73,59 +74,36 @@ export default function Dashboard() {
       </div>
       {isPending && <div>Loading</div>}
       <Dropzone uppy={uppy}>
-        <div className="flex flex-wrap gap-4">
-          {fileList?.map((file) => {
-            const isImage = file.contentType.startsWith("image");
-            return (
-              <div
-                key={file.id}
-                className="w-56 h-56 flex justify-center items-center border"
-              >
-                {isImage ? (
-                  <img src={file.url} alt={file.name}></img>
-                ) : (
-                  <Image src="" width={100} height={100} alt=""></Image>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </Dropzone>
-      {/* <input
-        type="file"
-        onChange={(e) => {
-          if (e.target.files) {
-            Array.from(e.target.files).forEach((file) => {
-              uppy.addFile({
-                data: file,
-                name: file.name, // Add the file's name
-                type: file.type, // Optional: add file type for better metadata
-              });
-            });
-          }
+        {(dragging) => {
+          return (
+            <div
+              className={cn("flex flex-wrap gap-4", dragging && " bg-red-100")}
+            >
+              {fileList?.map((file) => {
+                const isImage = file.contentType.startsWith("image");
+                return (
+                  <div
+                    key={file.id}
+                    className="w-56 h-56 flex justify-center items-center border"
+                  >
+                    {isImage ? (
+                      <img src={file.url} alt={file.name}></img>
+                    ) : (
+                      <Image src="" width={100} height={100} alt=""></Image>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
         }}
-        multiple
-      />
+      </Dropzone>
+
       {files.map((file) => {
         const url = URL.createObjectURL(file.data);
         return <img src={url} key={file.id} />;
       })}
-      <Button
-        onClick={() => {
-          if (uppy) {
-            uppy.upload().then((result: any) => {
-              if (result.failed.length > 0) {
-                console.error("Upload failed:", result.failed);
-              } else {
-                console.log("Upload successful:", result.successful);
-              }
-            });
-          }
-        }}
-      >
-        Upload
-      </Button>
-      <div>{progress}</div> */}
+      <div>{progress}</div>
     </div>
   );
 }
