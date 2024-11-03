@@ -56,8 +56,10 @@ export default function Dashboard() {
       }
     };
 
-    const uploadProgressHandler = (data) => {
-      setUploadingFileIDs((currentFiles) => [...currentFiles, ...data.fileIDs]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const uploadProgressHandler = (file, progress) => {
+      console.log(file, progress);
+      setUploadingFileIDs((currentFiles) => [...currentFiles, progress[0].id]);
     };
 
     const completeHandler = () => {
@@ -124,9 +126,9 @@ export default function Dashboard() {
                 uploadingFileIDs.map((id) => {
                   const file = uppyFiles[id];
 
-                  const isImage = file.data.type.startsWith("image");
+                  const isImage = file?.data.type.startsWith("image");
 
-                  const url = URL.createObjectURL(file.data);
+                  const url = URL.createObjectURL(file?.data);
 
                   return (
                     <div

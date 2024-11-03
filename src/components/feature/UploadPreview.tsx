@@ -1,6 +1,6 @@
 import { useUppyState } from "@/app/dashboard/useUppyState";
-import { DialogContent, DialogTitle } from "@radix-ui/react-dialog";
-import { Dialog, DialogFooter } from "../ui/Dialog";
+
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from "../ui/Dialog";
 import Image from "next/image";
 import Uppy from "@uppy/core";
 import { useState } from "react";
@@ -14,7 +14,7 @@ export function UploadPreview({ uppy }: { uppy: Uppy }) {
 
   const file = files[index];
 
-  const isImage = file.data.type.startsWith("image");
+  const isImage = file?.data?.type.startsWith("image");
 
   const clear = () => {
     files.map((file) => {
