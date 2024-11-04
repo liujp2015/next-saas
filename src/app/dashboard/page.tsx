@@ -41,8 +41,8 @@ export default function Dashboard() {
     },
   });
   return (
-    <div className="container mx-auto p-2">
-      <div className="flex justify-between items-center mb-4">
+    <div className=" mx-auto h-screen">
+      <div className=" container flex justify-between items-center h-[60px]">
         <Button
           onClick={() => {
             if (uppy) {
@@ -61,7 +61,7 @@ export default function Dashboard() {
         <UploadButton uppy={uppy}></UploadButton>
       </div>
 
-      <Dropzone uppy={uppy} className=" relative">
+      <Dropzone uppy={uppy} className=" h-[calc(100% - 60px)] relative">
         {(dragging) => {
           return (
             <>

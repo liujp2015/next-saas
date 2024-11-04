@@ -3,11 +3,12 @@ import { cn } from "@/lib/utils";
 import { trpcClientReact, trpcPureClient } from "@/utils/api";
 import Uppy from "@uppy/core";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FileItem, LocalFileItem, RemoteFileItem } from "./FileItem";
 import { inferRouterOutputs } from "@trpc/server";
 import { AppRouter } from "@/server/trpc-middlewares/router";
 import { Button } from "../ui/Button";
+import { ScrollArea } from "../ui/ScrollArea";
 type FileResult = inferRouterOutputs<AppRouter>["file"]["listFiles"];
 
 export function FileList({ uppy }: { uppy: Uppy }) {
@@ -42,12 +43,26 @@ export function FileList({ uppy }: { uppy: Uppy }) {
             type: file.data.type,
           })
           .then((resp) => {
-            utils.file.listFiles.setData(void 0, (prev) => {
-              if (!prev) {
-                return prev;
+            utils.file.infinityQueryFiles.setInfiniteData(
+              { limit: 10 },
+              (prev) => {
+                if (!prev) {
+                  return prev;
+                }
+                return {
+                  ...prev,
+                  pages: prev.pages.map((page, index) => {
+                    if (index === 0) {
+                      return {
+                        ...page,
+                        items: [resp, ...page.items],
+                      };
+                    }
+                    return page;
+                  }),
+                };
               }
-              return [resp, ...prev];
-            });
+            );
           });
       }
     };
@@ -72,41 +87,84 @@ export function FileList({ uppy }: { uppy: Uppy }) {
     };
   }, [uppy, utils]);
 
+  // -----------------------> intersection
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (bottomRef.current) {
+      const observer = new IntersectionObserver(
+        (e) => {
+          console.log(e);
+          if (e[0].intersectionRatio > 0.1) {
+            fetchNextPage();
+          }
+        },
+        {
+          threshold: 0.1,
+        }
+      );
+
+      observer.observe(bottomRef.current);
+      const element = bottomRef.current;
+
+      return () => {
+        observer.unobserve(element);
+        observer.disconnect();
+      };
+    }
+  }, [fetchNextPage]);
+
   return (
     <>
-      {isPending && <div>Loading</div>}
+      <ScrollArea className="h-full">
+        {isPending && <div>Loading</div>}
 
-      <div className={cn("flex flex-wrap gap-4 relative")}>
-        {uploadingFileIDs.length > 0 &&
-          uploadingFileIDs.map((id) => {
-            const file = uppyFiles[id];
+        <div
+          className={cn(
+            " container flex flex-wrap  justify-center gap-4 relative"
+          )}
+        >
+          {uploadingFileIDs.length > 0 &&
+            uploadingFileIDs.map((id) => {
+              const file = uppyFiles[id];
 
+              return (
+                <div
+                  key={file.id}
+                  className="w-56 h-56 flex justify-center items-center border border-red-500"
+                >
+                  <LocalFileItem file={file.data as File}></LocalFileItem>
+                </div>
+              );
+            })}
+
+          {filesList?.map((file) => {
             return (
               <div
                 key={file.id}
-                className="w-56 h-56 flex justify-center items-center border border-red-500"
+                className="w-56 h-56 flex justify-center items-center border"
               >
-                <LocalFileItem file={file.data as File}></LocalFileItem>
+                <RemoteFileItem
+                  contentType={file.contentType}
+                  url={file.url}
+                  name={file.name}
+                ></RemoteFileItem>
               </div>
             );
           })}
-
-        {filesList?.map((file) => {
-          return (
-            <div
-              key={file.id}
-              className="w-56 h-56 flex justify-center items-center border"
-            >
-              <RemoteFileItem
-                contentType={file.contentType}
-                url={file.url}
-                name={file.name}
-              ></RemoteFileItem>
-            </div>
-          );
-        })}
-        <Button onClick={() => fetchNextPage()}>next page</Button>
-      </div>
+        </div>
+        <div
+          className={cn(
+            "flex justify-center p-8 hidden",
+            filesList.length > 0 && "flex"
+          )}
+          ref={bottomRef}
+        >
+          <Button variant="ghost" onClick={() => fetchNextPage()}>
+            Load Next Page
+          </Button>
+        </div>
+      </ScrollArea>
     </>
   );
 }
