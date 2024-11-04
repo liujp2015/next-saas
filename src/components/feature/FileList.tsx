@@ -5,9 +5,28 @@ import Uppy from "@uppy/core";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FileItem, LocalFileItem, RemoteFileItem } from "./FileItem";
+import { inferRouterOutputs } from "@trpc/server";
+import { AppRouter } from "@/server/trpc-middlewares/router";
+import { Button } from "../ui/Button";
+type FileResult = inferRouterOutputs<AppRouter>["file"]["listFiles"];
+
 export function FileList({ uppy }: { uppy: Uppy }) {
-  const { data: fileList, isPending } =
-    trpcClientReact.file.listFiles.useQuery();
+  const {
+    data: infinityQueryData,
+    isPending,
+    fetchNextPage,
+  } = trpcClientReact.file.infinityQueryFiles.useInfiniteQuery(
+    { limit: 3 },
+    {
+      getNextPageParam: (resp) => resp.nextCursor,
+    }
+  );
+  const filesList = infinityQueryData
+    ? infinityQueryData.pages.reduce((result, page) => {
+        return [...result, ...page.items];
+      }, [] as FileResult)
+    : [];
+
   const [uploadingFileIDs, setUploadingFileIDs] = useState<string[]>([]);
   const uppyFiles = useUppyState(uppy, (s) => s.files);
 
@@ -72,7 +91,7 @@ export function FileList({ uppy }: { uppy: Uppy }) {
             );
           })}
 
-        {fileList?.map((file) => {
+        {filesList?.map((file) => {
           return (
             <div
               key={file.id}
@@ -86,6 +105,7 @@ export function FileList({ uppy }: { uppy: Uppy }) {
             </div>
           );
         })}
+        <Button onClick={() => fetchNextPage()}>next page</Button>
       </div>
     </>
   );

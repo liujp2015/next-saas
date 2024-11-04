@@ -10,7 +10,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { db } from "../db/db";
 import { files } from "../db/schema";
 import { AwsS3UploadParameters } from "@uppy/aws-s3";
-import { desc } from "drizzle-orm";
+import { desc, gt, sql } from "drizzle-orm";
 
 const bucket = "test-image-1302880496";
 const apiEndpoint = "https://cos.ap-chengdu.myqcloud.com";
@@ -97,4 +97,43 @@ export const fileRoutes = router({
 
     return result;
   }),
+  infinityQueryFiles: protectedProcedure
+    .input(
+      z.object({
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.string(),
+          })
+          .optional(),
+        limit: z.number().default(10),
+      })
+    )
+    .query(async ({ input }) => {
+      const { cursor, limit } = input;
+
+      const result = await db
+        .select()
+        .from(files)
+        .limit(limit)
+        .where(
+          cursor
+            ? sql`("files"."created_at", "files"."id") < (${new Date(
+                cursor.createdAt
+              ).toISOString()}, ${cursor.id})`
+            : undefined
+        )
+        .orderBy(desc(files.createdAt));
+
+      return {
+        items: result,
+        nextCursor:
+          result.length > 0
+            ? {
+                createdAt: result[result.length - 1].createdAt!,
+                id: result[result.length - 1].id,
+              }
+            : null,
+      };
+    }),
 });
