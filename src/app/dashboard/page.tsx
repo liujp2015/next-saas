@@ -13,7 +13,7 @@ import { usePasteFile } from "@/hooks/usePasteFile";
 import { UploadPreview } from "@/components/feature/UploadPreview";
 import { FileList } from "@/components/feature/FileList";
 import { FilesOrderByColumn } from "@/server/routes/file";
-import { MoveUp, MoveDown } from "lucide-react";
+import { MoveUp, MoveDown, Link } from "lucide-react";
 
 export default function Dashboard() {
   const [uppy] = useState(() => {
@@ -50,7 +50,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className=" mx-auto h-screen">
+    <div className=" mx-auto h-full">
       <div className=" container flex justify-between items-center h-[60px]">
         <Button
           onClick={() => {
@@ -64,6 +64,7 @@ export default function Dashboard() {
         </Button>
 
         <UploadButton uppy={uppy}></UploadButton>
+        <Link href="/dashboard/a"> </Link>
       </div>
 
       <Dropzone uppy={uppy} className=" h-[calc(100% - 60px)] relative">

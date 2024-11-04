@@ -1,7 +1,8 @@
 import { trpcClientReact } from "@/utils/api";
 import { Button } from "../ui/Button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Copy } from "lucide-react";
 import copy from "copy-to-clipboard";
+import { toast } from "sonner";
 
 export function DeleteFile({
   fileId,
@@ -20,6 +21,7 @@ export function DeleteFile({
 
   const handleRemoveFile = () => {
     deleteFile(fileId);
+    toast("delete success");
   };
 
   return (
@@ -31,7 +33,13 @@ export function DeleteFile({
 
 export function CopyUrl({ url }: { url: string }) {
   return (
-    <Button variant="ghost" onClick={() => copy(url)}>
+    <Button
+      variant="ghost"
+      onClick={() => {
+        copy(url);
+        toast("success");
+      }}
+    >
       <Copy />
     </Button>
   );

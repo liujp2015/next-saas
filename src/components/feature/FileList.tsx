@@ -29,9 +29,15 @@ export function FileList({
     data: infinityQueryData,
     isPending,
     fetchNextPage,
-  } = trpcClientReact.file.infinityQueryFiles.useInfiniteQuery(queryKey, {
-    getNextPageParam: (resp) => resp.nextCursor,
-  });
+  } = trpcClientReact.file.infinityQueryFiles.useInfiniteQuery(
+    { ...queryKey },
+    {
+      getNextPageParam: (resp) => resp.nextCursor,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+    }
+  );
   const filesList = infinityQueryData
     ? infinityQueryData.pages.reduce((result, page) => {
         return [...result, ...page.items];
@@ -53,23 +59,26 @@ export function FileList({
             type: file.data.type,
           })
           .then((resp) => {
-            utils.file.infinityQueryFiles.setInfiniteData(queryKey, (prev) => {
-              if (!prev) {
-                return prev;
+            utils.file.infinityQueryFiles.setInfiniteData(
+              { ...queryKey },
+              (prev) => {
+                if (!prev) {
+                  return prev;
+                }
+                return {
+                  ...prev,
+                  pages: prev.pages.map((page, index) => {
+                    if (index === 0) {
+                      return {
+                        ...page,
+                        items: [resp, ...page.items],
+                      };
+                    }
+                    return page;
+                  }),
+                };
               }
-              return {
-                ...prev,
-                pages: prev.pages.map((page, index) => {
-                  if (index === 0) {
-                    return {
-                      ...page,
-                      items: [resp, ...page.items],
-                    };
-                  }
-                  return page;
-                }),
-              };
-            });
+            );
           });
       }
     };
@@ -122,7 +131,7 @@ export function FileList({
   }, [fetchNextPage]);
 
   const handleFileDelete = (id: string) => {
-    utils.file.infinityQueryFiles.setInfiniteData(queryKey, (prev) => {
+    utils.file.infinityQueryFiles.setInfiniteData({ ...queryKey }, (prev) => {
       if (!prev) {
         return prev;
       }
@@ -182,7 +191,7 @@ export function FileList({
 
                 <RemoteFileItem
                   contentType={file.contentType}
-                  url={file.url}
+                  id={file.id}
                   name={file.name}
                 ></RemoteFileItem>
               </div>

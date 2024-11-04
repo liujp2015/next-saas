@@ -31,13 +31,15 @@ export function LocalFileItem({ file }: { file: File }) {
 
 export function RemoteFileItem({
   contentType,
-  url,
+  id,
   name,
 }: {
   contentType: string;
-  url: string;
+  id: string;
   name: string;
 }) {
   const isImage = contentType.startsWith("image");
-  return <FileItem isImage={isImage} url={url} name={name}></FileItem>;
+  return (
+    <FileItem isImage={isImage} url={`/image/${id}`} name={name}></FileItem>
+  );
 }
