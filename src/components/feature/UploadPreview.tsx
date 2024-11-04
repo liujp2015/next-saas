@@ -6,6 +6,7 @@ import Uppy from "@uppy/core";
 import { useState } from "react";
 import { Button } from "../ui/Button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { LocalFileItem } from "./FileItem";
 
 export function UploadPreview({ uppy }: { uppy: Uppy }) {
   const files = useUppyState(uppy, (s) => Object.values(s.files));
@@ -52,11 +53,7 @@ export function UploadPreview({ uppy }: { uppy: Uppy }) {
             key={file.id}
             className="w-56 h-56 flex justify-center items-center"
           >
-            {isImage ? (
-              <img src={URL.createObjectURL(file.data)} alt={file.name}></img>
-            ) : (
-              <Image src="" width={100} height={100} alt=""></Image>
-            )}
+            <LocalFileItem file={file.data as File}></LocalFileItem>
           </div>
           <Button
             variant="ghost"
