@@ -8,15 +8,24 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { db } from "../db/db";
-import { files } from "../db/schema";
 import { AwsS3UploadParameters } from "@uppy/aws-s3";
-import { desc, gt, sql } from "drizzle-orm";
+import { desc, gt, sql, asc, eq, and, isNull } from "drizzle-orm";
+import { filesCanOrderByColumns } from "../db/validate-schema";
+import { files } from "../db/schema";
 
 const bucket = "test-image-1302880496";
 const apiEndpoint = "https://cos.ap-chengdu.myqcloud.com";
 const region = "ap-chengdu";
 const COS_APP_ID = "AKID6FCvSnvpW5UjmdM0Z5g3FF1ZrukMlCQP";
 const COS_APP_SECRET = "xgAXnwwsncIpHhuxpV0JOGvMdo9LQk6L";
+const filesOrderByColumnSchema = z
+  .object({
+    field: filesCanOrderByColumns.keyof(),
+    order: z.enum(["desc", "asc"]),
+  })
+  .optional();
+
+export type FilesOrderByColumn = z.infer<typeof filesOrderByColumnSchema>;
 
 export const fileRoutes = router({
   // 创建预签名 URL 的路由
@@ -107,23 +116,41 @@ export const fileRoutes = router({
           })
           .optional(),
         limit: z.number().default(10),
+        orderBy: filesOrderByColumnSchema,
       })
     )
     .query(async ({ input }) => {
-      const { cursor, limit } = input;
+      const {
+        cursor,
+        limit,
+        orderBy = { filed: "createdAt", order: "desc" },
+      } = input;
 
-      const result = await db
+      const deletedFilter = isNull(files.deletedAt);
+
+      const statement = db
         .select()
         .from(files)
         .limit(limit)
         .where(
           cursor
-            ? sql`("files"."created_at", "files"."id") < (${new Date(
-                cursor.createdAt
-              ).toISOString()}, ${cursor.id})`
-            : undefined
-        )
-        .orderBy(desc(files.createdAt));
+            ? and(
+                sql`("files"."created_at", "files"."id") < (${new Date(
+                  cursor.createdAt
+                ).toISOString()}, ${cursor.id})`,
+                deletedFilter
+              )
+            : deletedFilter
+        );
+
+      // .orderBy(desc(files.createdAt));
+      statement.orderBy(
+        orderBy.order === "desc"
+          ? desc(files[orderBy.field])
+          : asc(files[orderBy.field])
+      );
+
+      const result = await statement;
 
       return {
         items: result,
@@ -135,5 +162,16 @@ export const fileRoutes = router({
               }
             : null,
       };
+    }),
+
+  deleteFile: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      return db
+        .update(files)
+        .set({
+          deletedAt: new Date(),
+        })
+        .where(eq(files.id, input));
     }),
 });

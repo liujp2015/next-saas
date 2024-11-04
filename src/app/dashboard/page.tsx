@@ -12,6 +12,8 @@ import { cn } from "../lib/utils";
 import { usePasteFile } from "@/hooks/usePasteFile";
 import { UploadPreview } from "@/components/feature/UploadPreview";
 import { FileList } from "@/components/feature/FileList";
+import { FilesOrderByColumn } from "@/server/routes/file";
+import { MoveUp, MoveDown } from "lucide-react";
 
 export default function Dashboard() {
   const [uppy] = useState(() => {
@@ -40,24 +42,27 @@ export default function Dashboard() {
       );
     },
   });
+  const [orderBy, setOrderBy] = useState<
+    Exclude<FilesOrderByColumn, undefined>
+  >({
+    field: "createdAt",
+    order: "desc",
+  });
+
   return (
     <div className=" mx-auto h-screen">
       <div className=" container flex justify-between items-center h-[60px]">
         <Button
           onClick={() => {
-            if (uppy) {
-              uppy.upload().then((result: any) => {
-                if (result.failed.length > 0) {
-                  console.error("Upload failed:", result.failed);
-                } else {
-                  console.log("Upload successful:", result.successful);
-                }
-              });
-            }
+            setOrderBy((current) => ({
+              ...current,
+              order: current?.order === "asc" ? "desc" : "asc",
+            }));
           }}
         >
-          Upload
+          Created At {orderBy.order === "desc" ? <MoveUp /> : <MoveDown />}
         </Button>
+
         <UploadButton uppy={uppy}></UploadButton>
       </div>
 
@@ -71,7 +76,7 @@ export default function Dashboard() {
                 </div>
               )}
 
-              <FileList uppy={uppy}></FileList>
+              <FileList uppy={uppy} orderBy={orderBy}></FileList>
             </>
           );
         }}
