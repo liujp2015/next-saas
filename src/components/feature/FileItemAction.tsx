@@ -11,7 +11,6 @@ export function DeleteFile({
   onDeleteSuccess: (fileId: string) => void;
 }) {
   // function implementation goes here
-
   const { mutate: deleteFile, isPending } =
     trpcClientReact.file.deleteFile.useMutation({
       onSuccess() {
