@@ -13,7 +13,8 @@ import { usePasteFile } from "@/hooks/usePasteFile";
 import { UploadPreview } from "@/components/feature/UploadPreview";
 import { FileList } from "@/components/feature/FileList";
 import { FilesOrderByColumn } from "@/server/routes/file";
-import { MoveUp, MoveDown, Link } from "lucide-react";
+import { MoveUp, MoveDown } from "lucide-react";
+import Link from "next/link";
 
 export default function AppPage({ params }) {
   const unwrappedParams = use(params); // 使用 React.use() 解包 params

@@ -1,3 +1,4 @@
+import { desc } from "drizzle-orm";
 import { db } from "../db/db";
 import { apps } from "../db/schema";
 import { createAppSchema } from "../db/validate-schema";
@@ -18,4 +19,14 @@ export const appsRouter = router({
         .returning();
       return result[0];
     }),
+
+  listApps: protectedProcedure.query(async ({ ctx }) => {
+    const result = await db.query.apps.findMany({
+      where: (apps, { eq, and, isNull }) =>
+        and(eq(apps.id, ctx.session.user.id), isNull(apps.deletedAt)),
+      orderBy: [desc(apps.createdAt)],
+    });
+
+    return result;
+  }),
 });
