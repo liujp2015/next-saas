@@ -1,7 +1,7 @@
 "use client";
 import { Uppy } from "@uppy/core";
 import AWSS3 from "@uppy/aws-s3";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useUppyState } from "../../useUppyState";
 import { Button } from "@/components/ui/Button";
 import { trpcClientReact, trpcPureClient } from "@/utils/api";
@@ -15,11 +15,9 @@ import { FileList } from "@/components/feature/FileList";
 import { FilesOrderByColumn } from "@/server/routes/file";
 import { MoveUp, MoveDown, Link } from "lucide-react";
 
-export default function AppPage({
-  params: { id: appId },
-}: {
-  params: { id: string };
-}) {
+export default function AppPage({ params }) {
+  const unwrappedParams = use(params); // 使用 React.use() 解包 params
+  const appId = unwrappedParams; // 现在可以安全地访问 id
   const [uppy] = useState(() => {
     const uppy = new Uppy();
     uppy.use(AWSS3, {
@@ -67,8 +65,14 @@ export default function AppPage({
           Created At {orderBy.order === "desc" ? <MoveUp /> : <MoveDown />}
         </Button>
 
-        <UploadButton uppy={uppy}></UploadButton>
-        <Link href="/dashboard/a"> </Link>
+        <div className="flex justify-center gap-2">
+          <UploadButton uppy={uppy}></UploadButton>
+          <Button asChild>
+            <Link href="/dashboard/apps/new">new app</Link>
+          </Button>
+        </div>
+
+        <Link href="/dashboard/apps/new"> </Link>
       </div>
 
       <Dropzone uppy={uppy} className=" h-[calc(100% - 60px)] relative">

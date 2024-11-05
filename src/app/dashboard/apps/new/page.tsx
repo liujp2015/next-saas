@@ -5,9 +5,9 @@ import { getServerSession } from "@/server/auth";
 import { serverCaller } from "@/utils/trpc";
 import { redirect } from "next/navigation";
 import { createAppSchema } from "@/server/db/validate-schema";
-import { error } from "console";
+import { SubmitButton } from "./SubmitButton";
 
-export default function Home() {
+export default function createApp() {
   async function createApp(formData: FormData) {
     "use server";
     const name = formData.get("name");
@@ -30,12 +30,17 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen flex justify-center items-center">
+    <div className="h-full flex justify-center items-center">
       <form className="w-full max-w-md flex flex-col gap-4" action={createApp}>
         <h1 className="text-center text-2xl font-bold">Create App</h1>
-        <Input name="name" placeholder="App Name"></Input>
+        <Input
+          name="name"
+          placeholder="App Name"
+          minLength={3}
+          required
+        ></Input>
         <Textarea name="description" placeholder="Description"></Textarea>
-        <Button type="submit">Submit</Button>
+        <SubmitButton></SubmitButton>
       </form>
     </div>
   );
