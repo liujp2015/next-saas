@@ -15,7 +15,11 @@ import { FileList } from "@/components/feature/FileList";
 import { FilesOrderByColumn } from "@/server/routes/file";
 import { MoveUp, MoveDown, Link } from "lucide-react";
 
-export default function Dashboard() {
+export default function AppPage({
+  params: { id: appId },
+}: {
+  params: { id: string };
+}) {
   const [uppy] = useState(() => {
     const uppy = new Uppy();
     uppy.use(AWSS3, {
@@ -77,7 +81,7 @@ export default function Dashboard() {
                 </div>
               )}
 
-              <FileList uppy={uppy} orderBy={orderBy}></FileList>
+              <FileList uppy={uppy} orderBy={orderBy} appId={appId}></FileList>
             </>
           );
         }}

@@ -1,21 +1,22 @@
 import { getServerSession } from "@/server/auth";
+import { appRouter } from "@/server/trpc-middlewares/router";
 import { initTRPC, TRPCError } from "@trpc/server";
 
-export async function createContext() {
-  const session = await getServerSession();
+// export async function createContext() {
+//   const session = await getServerSession();
 
-  if (!session?.user) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-    });
-  }
+//   if (!session?.user) {
+//     throw new TRPCError({
+//       code: "FORBIDDEN",
+//     });
+//   }
 
-  return {
-    session,
-  };
-}
+//   return {
+//     session,
+//   };
+// }
 
-const t = initTRPC.context<typeof createContext>().create();
+const t = initTRPC.create();
 
 const middleware = t.middleware(async ({ ctx, next }) => {
   const start = Date.now();
@@ -32,7 +33,7 @@ const logProcedure = procedure.use(middleware);
 
 export const testRouter = router({
   hello: logProcedure.query(async ({ ctx }) => {
-    console.log(ctx.session);
+    // console.log(ctx.session);
     // await new Promise((resolve) => {
     //   setTimeout(() => {
     //     resolve(null);
@@ -58,10 +59,10 @@ export const testRouter = router({
 
 export type TestRouter = typeof testRouter;
 
-export const serverCaller = createCallerFactory(testRouter);
+export const serverCaller = createCallerFactory(appRouter);
 
 // 1. create a caller-function for your router
-const createCaller = createCallerFactory(testRouter);
+// const createCaller = createCallerFactory(testRouter);
 
 // 2. create a caller using your `Context`
-export const caller = createCaller(createContext);
+// export const caller = createCaller(createContext);
