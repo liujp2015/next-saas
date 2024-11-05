@@ -36,6 +36,7 @@ export const fileRoutes = router({
         filename: z.string(),
         contentType: z.string(),
         size: z.number(),
+        appId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -43,19 +44,38 @@ export const fileRoutes = router({
       const isoString = date.toISOString();
       const dateString = isoString.split("T")[0];
 
+      const app = await db.query.apps.findFirst({
+        where: (apps, { eq }) => eq(apps.id, input.appId),
+        with: { storage: true },
+      });
+
+      if (!app || !app.storage) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+        });
+      }
+
+      if (app.userId !== ctx.session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+        });
+      }
+
+      const storage = app.storage;
+
       const params: PutObjectCommandInput = {
-        Bucket: bucket,
+        Bucket: storage.configuration.bucket,
         Key: `${dateString}/${input.filename.replaceAll(" ", "_")}`,
         ContentType: input.contentType,
         ContentLength: input.size,
       };
 
       const s3Client = new S3Client({
-        endpoint: apiEndpoint,
-        region: region,
+        endpoint: storage.configuration.apiEndpoint,
+        region: storage.configuration.region,
         credentials: {
-          accessKeyId: COS_APP_ID,
-          secretAccessKey: COS_APP_SECRET,
+          accessKeyId: storage.configuration.accessKeyId,
+          secretAccessKey: storage.configuration.secretAccessKey,
         },
       });
 

@@ -4,6 +4,7 @@ import {
   GetObjectCommandInput,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { TRPCError } from "@trpc/server";
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 const bucket = "test-image-1302880496";
@@ -18,7 +19,21 @@ export async function GET(
 ) {
   const file = await db.query.files.findFirst({
     where: (files, { eq }) => eq(files.id, id),
+    with: {
+      app: {
+        with: {
+          storage: true,
+        },
+      },
+    },
   });
+
+  if (!file?.app.storage) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+    });
+  }
+  const storage = file.app.storage.configuration;
 
   if (!file || !file.contentType.startsWith("image")) {
     return new NextResponse("", {
@@ -27,18 +42,19 @@ export async function GET(
   }
 
   const params: GetObjectCommandInput = {
-    Bucket: bucket,
+    Bucket: storage.bucket,
     Key: file.path,
   };
 
   const s3Client = new S3Client({
-    endpoint: apiEndpoint,
-    region: region,
+    endpoint: storage.apiEndpoint,
+    region: storage.region,
     credentials: {
-      accessKeyId: COS_APP_ID,
-      secretAccessKey: COS_APP_SECRET,
+      accessKeyId: storage.accessKeyId,
+      secretAccessKey: storage.secretAccessKey,
     },
   });
+
   const command = new GetObjectCommand(params);
   const response = await s3Client.send(command);
 
