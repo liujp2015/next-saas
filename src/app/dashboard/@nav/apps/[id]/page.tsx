@@ -20,7 +20,7 @@ export default function AppDashboardNav({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <Button variant="ghost">
           {isPending ? "Loading..." : currentApp ? currentApp.name : "..."}
         </Button>

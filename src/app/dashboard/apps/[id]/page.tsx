@@ -13,7 +13,7 @@ import { usePasteFile } from "@/hooks/usePasteFile";
 import { UploadPreview } from "@/components/feature/UploadPreview";
 import { FileList } from "@/components/feature/FileList";
 import { FilesOrderByColumn } from "@/server/routes/file";
-import { MoveUp, MoveDown } from "lucide-react";
+import { MoveUp, MoveDown, Settings } from "lucide-react";
 import Link from "next/link";
 
 export default function AppPage({ params }) {
@@ -71,6 +71,11 @@ export default function AppPage({ params }) {
           <UploadButton uppy={uppy}></UploadButton>
           <Button asChild>
             <Link href="/dashboard/apps/new">new app</Link>
+          </Button>
+          <Button asChild>
+            <Link href={`/dashboard/apps/${appId}/storage`}>
+              <Settings></Settings>
+            </Link>
           </Button>
         </div>
 
