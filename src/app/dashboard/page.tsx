@@ -77,7 +77,7 @@ export default function Dashboard() {
                 </div>
               )}
 
-              <FileList uppy={uppy} orderBy={orderBy}></FileList>
+              <FileList uppy={uppy} orderBy={orderBy} appId={""}></FileList>
             </>
           );
         }}

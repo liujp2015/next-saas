@@ -23,7 +23,7 @@ export const appsRouter = router({
   listApps: protectedProcedure.query(async ({ ctx }) => {
     const result = await db.query.apps.findMany({
       where: (apps, { eq, and, isNull }) =>
-        and(eq(apps.id, ctx.session.user.id), isNull(apps.deletedAt)),
+        and(eq(apps.userId, ctx.session.user.id), isNull(apps.deletedAt)),
       orderBy: [desc(apps.createdAt)],
     });
 

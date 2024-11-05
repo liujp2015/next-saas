@@ -9,6 +9,8 @@ import {
   varchar,
   index,
   unique,
+  serial,
+  json,
 } from "drizzle-orm/pg-core";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -33,6 +35,7 @@ export const users = pgTable("user", {
 export const usersRelation = relations(users, ({ many }) => ({
   files: many(files),
   apps: many(apps),
+  storages: many(storageConfiguration),
 }));
 
 export const accounts = pgTable(
@@ -147,5 +150,39 @@ export const apps = pgTable(
 );
 export const appRelations = relations(apps, ({ one, many }) => ({
   user: one(users, { fields: [apps.userId], references: [users.id] }),
+  storage: one(storageConfiguration, {
+    fields: [apps.storageId],
+    references: [storageConfiguration.id],
+  }),
   files: many(files),
 }));
+
+export type S3StorageConfiguration = {
+  bucket: string;
+  region: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  apiEndpoint?: string;
+};
+
+export type StorageConfiguration = S3StorageConfiguration;
+
+export const storageConfiguration = pgTable("storageConfiguration", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  userId: uuid("user_id").notNull(),
+  configuration: json("configuration")
+    .$type<S3StorageConfiguration>()
+    .notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+  deletedAt: timestamp("deleted_at", { mode: "date" }),
+});
+export const storageConfigurationRelation = relations(
+  storageConfiguration,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [storageConfiguration.userId],
+      references: [users.id],
+    }),
+  })
+);

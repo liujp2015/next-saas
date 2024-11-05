@@ -1,6 +1,13 @@
-import { DropdownMenu } from "@/components/ui/DropdownMenu";
+"use client";
+import { Button } from "@/components/ui/Button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/DropdownMenu";
 import { trpcClientReact } from "@/utils/api";
-import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import Link from "next/link";
 
 export default function AppDashboardNav({
   params: { id },
@@ -14,12 +21,19 @@ export default function AppDashboardNav({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        {isPending
-          ? "Loading..."
-          : currentApp
-          ? currentApp.name
-          : "No App Selected"}
+        <Button variant="ghost">
+          {isPending ? "Loading..." : currentApp ? currentApp.name : "..."}
+        </Button>
       </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {apps?.map((app) => {
+          return (
+            <DropdownMenuItem key={app.id} disabled={!app.id}>
+              <Link href={`/dashboard/apps/${app.id}`}>{app.name}</Link>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
     </DropdownMenu>
   );
 }
