@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "../db/db";
-import { apps, storageConfiguration } from "../db/schema";
+import { apiKeys, apps, storageConfiguration } from "../db/schema";
 import { createAppSchema } from "../db/validate-schema";
 import { protectedProcedure, router } from "../trpc-middlewares/trpc";
 import { z } from "zod";
@@ -28,7 +28,7 @@ export const apiKeysRouter = router({
       const { name, ...configuration } = input;
 
       const result = await db
-        .insert(storageConfiguration)
+        .insert(apiKeys)
         .values({
           name: input.name,
           appId: input.appId,

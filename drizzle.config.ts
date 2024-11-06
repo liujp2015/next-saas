@@ -3,7 +3,7 @@ export default defineConfig({
   dialect: "postgresql",
   schema: "./src/server/db/schema.ts",
   dbCredentials: {
-    host: "121.40.217.41",
+    host: "127.0.0.1",
     port: 5432,
     user: "postgres",
     password: "123456",
@@ -12,5 +12,4 @@ export default defineConfig({
   },
   verbose: true,
   strict: true,
-  isRLSEnabled: false,
 });

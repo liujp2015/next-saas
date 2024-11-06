@@ -17,8 +17,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import type { AdapterAccount } from "next-auth/adapters";
 import { relations } from "drizzle-orm";
 
-const connectionString =
-  "postgres://postgres:123456@121.40.217.41:5432/postgres";
+const connectionString = "postgres://postgres:123456@127.0.0.1:5432/postgres";
 const pool = postgres(connectionString, { max: 1 });
 
 export const db = drizzle(pool);
@@ -191,7 +190,7 @@ export const apiKeys = pgTable("apiKeys", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 225 }).notNull(),
   key: varchar("key", { length: 100 }).notNull(),
-  appId: varchar("appId", { length: 100 }).notNull(),
+  appId: uuid("appId").notNull(),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
   deletedAt: timestamp("deleted_at", { mode: "date" }),
 });

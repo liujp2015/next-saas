@@ -48,43 +48,40 @@ export const protectedProcedure = withLoggerProcedure
     });
   });
 
-export const withAppProcedure = withLoggerProcedure.use(
-  async ({ ctx, next }) => {
-    const request = ctx;
-    const header = headers();
+export const withAppProcedure = withLoggerProcedure.use(async ({ next }) => {
+  const header = headers();
 
-    const apiKey = header.get("api-key");
+  const apiKey = (await header).get("api-key");
 
-    if (!apiKey) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-      });
-    }
-
-    const apiKeyAndAppUser = await db.query.apiKeys.findFirst({
-      where: (apiKeys, { eq, and, isNotNull }) =>
-        and(eq(apiKeys.key, apiKey), isNotNull(apiKeys.deletedAt)),
-      with: {
-        app: {
-          with: {
-            user: true,
-          },
-        },
-      },
-    });
-    if (!apiKeyAndAppUser) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-      });
-    }
-
-    return next({
-      ctx: {
-        app: apiKeyAndAppUser.app,
-        user: apiKeyAndAppUser.app.user,
-      },
+  if (!apiKey) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
     });
   }
-);
+
+  const apiKeyAndAppUser = await db.query.apiKeys.findFirst({
+    where: (apiKeys, { eq, and, isNull }) =>
+      and(eq(apiKeys.key, apiKey), isNull(apiKeys.deletedAt)),
+    with: {
+      app: {
+        with: {
+          user: true,
+        },
+      },
+    },
+  });
+  if (!apiKeyAndAppUser) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+    });
+  }
+
+  return next({
+    ctx: {
+      app: apiKeyAndAppUser.app,
+      user: apiKeyAndAppUser.app.user,
+    },
+  });
+});
 
 export { router };

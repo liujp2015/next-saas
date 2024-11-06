@@ -10,6 +10,7 @@ export default function StoragePage({
   params: { id: string };
 }) {
   const { data: storages } = trpcClientReact.storages.listStorages.useQuery();
+  debugger;
   const { data: apps, isPending } = trpcClientReact.apps.listApps.useQuery();
   const utils = trpcClientReact.useUtils();
 
