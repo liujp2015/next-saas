@@ -5,8 +5,9 @@ import { createAppSchema } from "../db/validate-schema";
 import { protectedProcedure, router } from "../trpc-middlewares/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { v4 as uuid } from "uuid";
 
-export const apiKeyRouter = router({
+export const apiKeysRouter = router({
   listApiKeys: protectedProcedure
     .input(z.object({ appId: z.number() }))
     .query(async ({ ctx, input }) => {
@@ -16,15 +17,11 @@ export const apiKeyRouter = router({
       });
     }),
 
-  createStorage: protectedProcedure
+  createApikey: protectedProcedure
     .input(
       z.object({
         name: z.string().min(3).max(50),
-        bucket: z.string(),
-        region: z.string(),
-        accessKeyId: z.string(),
-        secretAccessKey: z.string(),
-        apiEndpoint: z.string().optional(),
+        appId: z.number(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -34,8 +31,8 @@ export const apiKeyRouter = router({
         .insert(storageConfiguration)
         .values({
           name: input.name,
-          configuration: configuration,
-          userId: ctx.session.user.id,
+          appId: input.appId,
+          key: uuid(),
         })
         .returning();
 
