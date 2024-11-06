@@ -16,7 +16,7 @@ export default function SettingLayout({
       <div className="flex flex-col w-60 flex-shrink-0 pt-10 gap-4">
         <Button
           size={"lg"}
-          asChild={path === `/dashboard/apps/${id}/setting/storage`}
+          asChild={path !== `/dashboard/apps/${id}/setting/storage`}
           variant={
             path === `/dashboard/apps/${id}/setting/storage`
               ? "outline"
@@ -24,7 +24,7 @@ export default function SettingLayout({
           }
           disabled={path === `/dashboard/apps/${id}/setting/storage`}
         >
-          {path === `/dashboard/apps/${id}/setting/api-key` ? (
+          {path !== `/dashboard/apps/${id}/setting/storage` ? (
             <Link href={`/dashboard/apps/${id}/setting/storage`}>Storage</Link>
           ) : (
             "Storage"
@@ -33,7 +33,7 @@ export default function SettingLayout({
 
         <Button
           size={"lg"}
-          asChild={path === `/dashboard/apps/${id}/setting/api-key`}
+          asChild={path !== `/dashboard/apps/${id}/setting/api-key`}
           variant={
             path === `/dashboard/apps/${id}/setting/api-key`
               ? "outline"
@@ -41,14 +41,14 @@ export default function SettingLayout({
           }
           disabled={path === `/dashboard/apps/${id}/setting/api-key`}
         >
-          {path === `/dashboard/apps/${id}/setting/api-key` ? (
+          {path !== `/dashboard/apps/${id}/setting/api-key` ? (
             <Link href={`/dashboard/apps/${id}/setting/api-key`}>Api Key</Link>
           ) : (
-            "Storage"
+            "Api Key"
           )}
         </Button>
       </div>
-      {children}
+      <div className="flex-grow pl-4">{children}</div>
     </div>
   );
 }

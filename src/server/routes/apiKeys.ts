@@ -9,7 +9,7 @@ import { v4 as uuid } from "uuid";
 
 export const apiKeysRouter = router({
   listApiKeys: protectedProcedure
-    .input(z.object({ appId: z.number() }))
+    .input(z.object({ appId: z.string() }))
     .query(async ({ ctx, input }) => {
       return db.query.apiKeys.findMany({
         where: (apiKeys, { eq, and, isNull }) =>
@@ -21,7 +21,7 @@ export const apiKeysRouter = router({
     .input(
       z.object({
         name: z.string().min(3).max(50),
-        appId: z.number(),
+        appId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {

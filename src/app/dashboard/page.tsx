@@ -1,7 +1,7 @@
 "use client";
 import { Uppy } from "@uppy/core";
 import AWSS3 from "@uppy/aws-s3";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useUppyState } from "../../useUppyState";
 import { Button } from "@/components/ui/Button";
 import { trpcClientReact, trpcPureClient } from "@/utils/api";
@@ -15,7 +15,9 @@ import { FileList } from "@/components/feature/FileList";
 import { FilesOrderByColumn } from "@/server/routes/file";
 import { MoveUp, MoveDown, Link } from "lucide-react";
 
-export default function Dashboard() {
+export default function Dashboard({ params }) {
+  const unwrappedParams = use(params); // 使用 React.use() 解包 params
+  const appId = unwrappedParams; // 现在可以安全地访问 id
   const [uppy] = useState(() => {
     const uppy = new Uppy();
     uppy.use(AWSS3, {
@@ -26,6 +28,7 @@ export default function Dashboard() {
           filename: file.data instanceof File ? file.data.name : "test",
           contentType: file.data.type || "",
           size: file.size ?? 0,
+          appId: appId,
         });
       },
     });

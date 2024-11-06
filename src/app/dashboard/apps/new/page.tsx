@@ -23,6 +23,7 @@ export default function createApp() {
     if (input.success) {
       const session = await getServerSession();
       const newApp = await serverCaller({ session }).apps.createApp(input.data);
+      console.log(newApp);
       redirect(`/dashboard/apps/${newApp.id}`);
     } else {
       throw Error(input.error);
